@@ -3,6 +3,7 @@
 import pytest
 
 from api.user_api import UserApi
+from api.order_api import OrderApi  # <-- Добавлен импорт
 from helpers.data_generator import generate_unique_user
 
 
@@ -16,9 +17,7 @@ def unique_user_data():
 def user_cleanup():
     """
     Фикстура для очистки созданных пользователей.
-
     Возвращает функцию, в которую нужно передать accessToken.
-    После завершения теста все пользователи удаляются.
     """
     tokens_to_delete = []
 
@@ -37,10 +36,7 @@ def user_cleanup():
 
 @pytest.fixture
 def registered_user(unique_user_data, user_cleanup):
-    """
-    Создаёт пользователя для тестов авторизации и заказов.
-    НЕ использовать в тестах регистрации.
-    """
+    """Создаёт пользователя для тестов авторизации и заказов."""
     response = UserApi.register(
         email=unique_user_data["email"],
         password=unique_user_data["password"],
@@ -57,3 +53,13 @@ def registered_user(unique_user_data, user_cleanup):
 def access_token(registered_user):
     """Возвращает accessToken зарегистрированного пользователя."""
     return registered_user.json()["accessToken"]
+
+
+# --- ПЕРЕНЕСЕННАЯ ФИКСТУРА ---
+@pytest.fixture(scope="session")
+def valid_ingredients():
+    """Получаем валидные ID ингредиентов с сервера (один раз на сессию)."""
+    response = OrderApi.get_ingredients()
+    assert response.status_code == 200
+    ingredients = response.json()["data"]
+    return [ingredients[0]["_id"], ingredients[1]["_id"]]
