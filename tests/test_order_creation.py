@@ -1,7 +1,6 @@
 """Тесты создания заказа."""
 
 import allure
-import pytest
 
 from api.order_api import OrderApi
 
@@ -9,19 +8,10 @@ from api.order_api import OrderApi
 @allure.feature("Создание заказа")
 class TestOrderCreation:
 
-    # Новая фикстура, которая устраняет дублирование кода
-    @pytest.fixture
-    def created_order(self, access_token, valid_ingredients):
-        """Выполняет предусловие: создает заказ с авторизацией."""
-        return OrderApi.create_order(
-            ingredients=valid_ingredients, access_token=access_token
-        )
-
     @allure.title("Создание заказа с авторизацией")
     def test_create_order_with_auth(self, created_order):
-        response = created_order
-        assert response.status_code == 200
-        body = response.json()
+        assert created_order.status_code == 200
+        body = created_order.json()
         assert body["success"] is True
         assert "order" in body
         assert "number" in body["order"]
@@ -38,9 +28,8 @@ class TestOrderCreation:
 
     @allure.title("Создание заказа с ингредиентами")
     def test_create_order_with_ingredients(self, created_order):
-        response = created_order
-        assert response.status_code == 200
-        body = response.json()
+        assert created_order.status_code == 200
+        body = created_order.json()
         assert body["success"] is True
 
     @allure.title("Создание заказа без ингредиентов")

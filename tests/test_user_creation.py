@@ -18,21 +18,16 @@ class TestUserCreation:
         )
         body = response.json()
 
-        # 1.Отправляем токен на удаление 
-        if response.status_code == 200:
-            user_cleanup(body["accessToken"])
+        user_cleanup(body["accessToken"])
 
-        # 2. Проверки
         assert response.status_code == 200
         assert body["success"] is True
         assert body["user"]["email"] == unique_user_data["email"]
         assert body["user"]["name"] == unique_user_data["name"]
-        assert "accessToken" in body
         assert "refreshToken" in body
 
     @allure.title("Создание пользователя, который уже зарегистрирован")
     def test_create_already_registered_user(self, unique_user_data, user_cleanup):
-        # Создаём пользователя ВНУТРИ теста (не через registered_user)
         first_response = UserApi.register(
             email=unique_user_data["email"],
             password=unique_user_data["password"],
@@ -41,7 +36,6 @@ class TestUserCreation:
         assert first_response.status_code == 200
         user_cleanup(first_response.json()["accessToken"])
 
-        # Повторная регистрация
         response = UserApi.register(
             email=unique_user_data["email"],
             password=unique_user_data["password"],

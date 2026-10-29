@@ -1,9 +1,10 @@
 """Фикстуры для тестов."""
 
 import pytest
+import uuid  # Если используете uuid
 
 from api.user_api import UserApi
-from api.order_api import OrderApi  # <-- Добавлен импорт
+from api.order_api import OrderApi  # Убедитесь, что этот импорт есть
 from helpers.data_generator import generate_unique_user
 
 
@@ -15,10 +16,7 @@ def unique_user_data():
 
 @pytest.fixture
 def user_cleanup():
-    """
-    Фикстура для очистки созданных пользователей.
-    Возвращает функцию, в которую нужно передать accessToken.
-    """
+    """Фикстура для очистки созданных пользователей."""
     tokens_to_delete = []
 
     def _add_token(access_token):
@@ -55,7 +53,6 @@ def access_token(registered_user):
     return registered_user.json()["accessToken"]
 
 
-# --- ПЕРЕНЕСЕННАЯ ФИКСТУРА ---
 @pytest.fixture(scope="session")
 def valid_ingredients():
     """Получаем валидные ID ингредиентов с сервера (один раз на сессию)."""
@@ -63,3 +60,12 @@ def valid_ingredients():
     assert response.status_code == 200
     ingredients = response.json()["data"]
     return [ingredients[0]["_id"], ingredients[1]["_id"]]
+
+
+# --- ПЕРЕНЕСЕННАЯ ФИКСТУРА ---
+@pytest.fixture
+def created_order(access_token, valid_ingredients):
+    """Выполняет предусловие: создает заказ с авторизацией."""
+    return OrderApi.create_order(
+        ingredients=valid_ingredients, access_token=access_token
+    )
